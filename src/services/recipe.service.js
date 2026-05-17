@@ -5,7 +5,9 @@ const getAllRecipes = async (category) => {
   const filter = {};
 
   if (category) {
-    filter.category = category;
+    filter.category = {
+      $regex: new RegExp(category, "i"),
+    };
   }
 
   const recipes = await Recipe.find(filter).sort({
@@ -16,8 +18,14 @@ const getAllRecipes = async (category) => {
 };
 
 const createRecipe = async (recipeData) => {
-  if (recipeData.cookingTime <= 0) {
-    throw new ApiError(400, "Cooking time must be greater than 0");
+  if (
+    recipeData.cookingTime &&
+    recipeData.cookingTime <= 0
+  ) {
+    throw new ApiError(
+      400,
+      "Cooking time must be greater than 0"
+    );
   }
 
   const recipe = await Recipe.create(recipeData);
@@ -30,6 +38,16 @@ const updateRecipe = async (recipeId, updateData) => {
 
   if (!recipe) {
     throw new ApiError(404, "Recipe not found");
+  }
+
+  if (
+    updateData.cookingTime &&
+    updateData.cookingTime <= 0
+  ) {
+    throw new ApiError(
+      400,
+      "Cooking time must be greater than 0"
+    );
   }
 
   Object.assign(recipe, updateData);
